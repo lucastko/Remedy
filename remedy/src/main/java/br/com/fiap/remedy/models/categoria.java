@@ -1,11 +1,16 @@
 package br.com.fiap.remedy.models;
 
+import java.util.Optional;
+
 public class categoria {
 
+    private Long id;
     private String nomeCategoria;
     private String tipoCategoria;
     private String principioAtivo;
     private String descricao;
+
+
 
     @Override
     public String toString() {
@@ -19,7 +24,8 @@ public class categoria {
         this.principioAtivo = principioAtivo;
         this.descricao = descricao;
     }
-    
+
+
     public String getNomeCategoria() {
         return nomeCategoria;
     }
@@ -43,6 +49,18 @@ public class categoria {
     }
     public void setDescricao(String descricao) {
         this.descricao = descricao;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Optional<categoria> stream() {
+        return null;
     }
     
     

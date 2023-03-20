@@ -4,12 +4,15 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class medicamento {
+    private Long id;
     private String nome;
     private Double dosagem;
     private LocalDate inicio;
     private LocalDate fim;
     private LocalTime hora; 
 
+
+    
     public medicamento(String nome, Double dosagem, LocalDate inicio, LocalDate fim, LocalTime hora, Double preco) {
         this.nome = nome;
         this.dosagem = dosagem;
@@ -55,7 +58,14 @@ public class medicamento {
         this.preco = preco;
     }
     private Double preco;
-
+    
+    public Long getId() {
+        return id;
+    }
+    public void setId(Long id) {
+        this.id = id;
+    }
+    
     @Override
     public String toString() {
         return "medicamento [nome=" + nome + ", dosagem=" + dosagem + ", inicio=" + inicio + ", fim=" + fim + ", hora="

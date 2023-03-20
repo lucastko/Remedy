@@ -8,6 +8,7 @@ public class farmacia {
     private int numeroFarmacia;
     private String telefoneFarmacia;
     private String horarioFarmacia;
+    private Long id;
 
 
     @Override
@@ -16,6 +17,10 @@ public class farmacia {
                 + numeroFarmacia + ", telefoneFarmacia=" + telefoneFarmacia + ", horarioFarmacia=" + horarioFarmacia
                 + "]";
     }
+
+
+    
+
 
     public farmacia(String nomeFarmacia, String ruaFarmacia, int numeroFarmacia, String telefoneFarmacia,
             String horarioFarmacia) {
@@ -56,6 +61,22 @@ public class farmacia {
     }
     public void setHorarioFarmacia(String horarioFarmacia) {
         this.horarioFarmacia = horarioFarmacia;
+    }
+
+
+
+
+
+    public Long getId() {
+        return id;
+    }
+
+
+
+
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
 
