@@ -1,8 +1,14 @@
 package br.com.fiap.remedy.models;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 
+@Entity
 public class farmacia {
-    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String nomeFarmacia;
     private String ruaFarmacia;
     private int numeroFarmacia;

@@ -1,9 +1,11 @@
 package br.com.fiap.remedy.controller;
 
-import java.util.ArrayList;
+
 import java.util.List;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -12,77 +14,70 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.fiap.remedy.models.contas;
+import br.com.fiap.remedy.repository.contaRepository;
 
 
 @RestController
+@RequestMapping("/api/contas")
 public class contaController {
     
-    org.slf4j.Logger log = LoggerFactory.getLogger(contaController.class);
+    Logger log = LoggerFactory.getLogger(contaController.class);
 
-    List<contas> contaListas = new ArrayList<>();
+    @Autowired
+    contaRepository repository;
 
-    @GetMapping("/api/contas")
+    @GetMapping
     public List<contas> index(){
-        return contaListas;
+        return repository.findAll();
     }
 
-    @GetMapping("/api/contas/{id}")
+    @GetMapping("{id}")
     public ResponseEntity<contas> show(@PathVariable Long id){
         log.info("buscar id da conta " + id);
-        var contaEncontrada = contaListas
-                                        .stream()
-                                        .filter((d) -> {return d.getId().equals(id);})
-                                        .findFirst();
+        var contaEncontrada = repository.findById(id);
 
         if (contaEncontrada.isEmpty())
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            
+            return ResponseEntity.notFound().build();
             return ResponseEntity.ok(contaEncontrada.get());
     }
 
-    @PostMapping("/api/contas")
+    @PostMapping
     public ResponseEntity<contas> create(@RequestBody contas Contas){
         log.info("Cadastrar conta " + Contas);
-        Contas.setId(contaListas.size()+ 1l);
+        repository.save(Contas);
         return ResponseEntity.status(HttpStatus.CREATED).body(Contas);
 
     }
 
 
-    @DeleteMapping("/api/contas/{id}")
+    @DeleteMapping("{id}")
     public ResponseEntity<contas> destroy(@PathVariable Long id){
     log.info("Apagar conta com id" + id);
-    var contaEncontrada = contaListas
-                                    .stream()
-                                    .filter((d) -> {return d.getId().equals(id);})
-                                    .findFirst();
+    var contaEncontrada = repository.findById(id);
 
         if (contaEncontrada.isEmpty()) 
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            return ResponseEntity.notFound().build();
 
-        contaListas.remove(contaEncontrada.get());
+        repository.delete(contaEncontrada.get());
 
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        return ResponseEntity.noContent().build();
 
     }
 
-     @PutMapping("/api/contas/{id}")
+     @PutMapping("{id}")
     public ResponseEntity<contas> update(@PathVariable Long id, @RequestBody contas Conta){
-        log.info("apagar despesa com id " + id);
-        var contaEncontrada = contaListas
-                                    .stream()
-                                    .filter((d) -> {return d.getId().equals(id);})
-                                    .findFirst();
+        log.info("atualizando conta " + id);
+        var contaEncontrada = repository.findById(id);
 
         if (contaEncontrada.isEmpty()) 
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            return ResponseEntity.notFound().build();
 
-        contaListas.remove(contaEncontrada.get());
         Conta.setId(id);
-        contaListas.add(Conta);
+        repository.save(Conta);
             
         return ResponseEntity.ok(Conta);
     }
