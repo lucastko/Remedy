@@ -17,8 +17,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.fiap.remedy.exceptions.RestNotFoundException;
 import br.com.fiap.remedy.models.categoria;
 import br.com.fiap.remedy.repository.categoriaRepository;
+
 
 @RestController
 @RequestMapping("/api/categoria")
@@ -39,12 +41,10 @@ public class categoriaController {
     @GetMapping("{id}")
     public ResponseEntity<categoria> show(@PathVariable Long id){
         log.info("buscar id da categoria " + id);
-        var categoriaEncontrada = repository.findById(id);
-                                        
-        if (categoriaEncontrada.isEmpty())
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        var categoriaEncontrada = repository.findById(id)
+            .orElseThrow(() -> new RestNotFoundException("Categoria não encontrada")); 
             
-            return ResponseEntity.ok(categoriaEncontrada.get());
+        return ResponseEntity.ok(categoriaEncontrada);
     }
 
     @PostMapping
@@ -59,13 +59,9 @@ public class categoriaController {
     @DeleteMapping("{id}")
     public ResponseEntity<categoria> destroy(@PathVariable Long id){
     log.info("Apagar categoria com id" + id);
-    var categoriaEncontrada = repository.findById(id);
-                                   
-
-        if (categoriaEncontrada.isEmpty()) 
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-
-        repository.delete(categoriaEncontrada.get());
+    var categoriaEncontrada = repository.findById(id)
+    .orElseThrow(() -> new RestNotFoundException("Erro ao deletar, categoria não encontrada"));                           
+        repository.delete(categoriaEncontrada);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 
@@ -74,10 +70,8 @@ public class categoriaController {
      @PutMapping("{id}")
     public ResponseEntity<categoria> update(@PathVariable Long id, @RequestBody categoria Categorias){
         log.info("atualizando categoria " + id);
-        var categoriaEncontrada = repository.findById(id);
-                                    
-        if (categoriaEncontrada.isEmpty()) 
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        repository.findById(id)                            
+            .orElseThrow(() -> new RestNotFoundException("Erro ao deletar, categoria não encontrada"));
 
         Categorias.setId(id);
         repository.save(Categorias);

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.fiap.remedy.exceptions.RestNotFoundException;
 import br.com.fiap.remedy.models.farmacia;
 import br.com.fiap.remedy.repository.farmaciaRepository;
 
@@ -37,13 +38,10 @@ public class farmaciaController {
     @GetMapping("{id}")
     public ResponseEntity<farmacia> show(@PathVariable Long id){
         log.info("buscar id da farmacia " + id);
-        var farmaciaEncontrada = repository.findById(id);
-
-
-        if (farmaciaEncontrada.isEmpty())
-            return ResponseEntity.notFound().build();
+        var farmaciaEncontrada = repository.findById(id)
+        .orElseThrow(() -> new RestNotFoundException("farmácia não encontrada"));
             
-            return ResponseEntity.ok(farmaciaEncontrada.get());
+            return ResponseEntity.ok(farmaciaEncontrada);
     }
 
     @PostMapping
@@ -57,13 +55,10 @@ public class farmaciaController {
     @DeleteMapping("{id}")
     public ResponseEntity<farmacia> destroy(@PathVariable Long id){
     log.info("Apagar farmacia com id" + id);
-    var farmaciaEncontrada = repository.findById(id);
+    var farmaciaEncontrada = repository.findById(id)
+    .orElseThrow(() -> new RestNotFoundException("Erro ao deletar, farmácia não encontrada"));
 
-        if (farmaciaEncontrada.isEmpty()) 
-            return ResponseEntity.notFound().build();
-
-            repository.delete(farmaciaEncontrada.get());
-
+            repository.delete(farmaciaEncontrada);
             return ResponseEntity.noContent().build();
 
     }
@@ -71,10 +66,8 @@ public class farmaciaController {
      @PutMapping("{id}")
     public ResponseEntity<farmacia> update(@PathVariable Long id, @RequestBody farmacia Farmacia){
         log.info("atualizar farmácia " + id);
-        var farmaciaEncontrada = repository.findById(id);
-
-        if (farmaciaEncontrada.isEmpty()) 
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        repository.findById(id)
+        .orElseThrow(() -> new RestNotFoundException("Erro ao deletar, farmácia não encontrada"));
 
         Farmacia.setId(id);
         repository.save(Farmacia);

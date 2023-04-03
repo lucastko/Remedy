@@ -7,19 +7,38 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 @Entity
 public class medicamento {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotNull(message = "Nome não pode ser um campo nulo")
+    @Pattern(regexp="[a-zA-Z ]+", message="O nome do medicamento deve conter apenas letras e espaços")
     private String nome;
+
+    @NotNull(message = "Dosagem não pode ser um campo nulo")
+    @Pattern(regexp="[0-9]+(?<=[a-zA-Z])", message="a dosagem do medicamento deve conter apenas letras e números")
     private Double dosagem;
+
+
+    @NotNull(message = "Início não pode ser um campo nulo")
+    @Pattern(regexp="[0-9]", message="O início do tratamento deve conter apenas números")
     private LocalDate inicio;
+
+    @NotNull(message = "Fim não pode ser um campo nulo")
+    @Pattern(regexp="[0-9]", message="O fim do tratamento deve conter apenas números")
     private LocalDate fim;
+    
+    @NotNull(message = "Hora não pode ser um campo nulo")
+    @Pattern(regexp="[0-9]", message="A hora do medicamento deve conter apenas números")
     private LocalTime hora; 
 
 
+    protected medicamento(){};
     
     public medicamento(String nome, Double dosagem, LocalDate inicio, LocalDate fim, LocalTime hora, Double preco) {
         this.nome = nome;

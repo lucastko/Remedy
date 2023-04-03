@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.fiap.remedy.exceptions.RestNotFoundException;
 import br.com.fiap.remedy.models.contas;
 import br.com.fiap.remedy.repository.contaRepository;
 
@@ -38,11 +39,10 @@ public class contaController {
     @GetMapping("{id}")
     public ResponseEntity<contas> show(@PathVariable Long id){
         log.info("buscar id da conta " + id);
-        var contaEncontrada = repository.findById(id);
+        var contaEncontrada = repository.findById(id)
+        .orElseThrow(() -> new RestNotFoundException("conta não encontrada"));
 
-        if (contaEncontrada.isEmpty())
-            return ResponseEntity.notFound().build();
-            return ResponseEntity.ok(contaEncontrada.get());
+        return ResponseEntity.ok(contaEncontrada);
     }
 
     @PostMapping
@@ -57,24 +57,19 @@ public class contaController {
     @DeleteMapping("{id}")
     public ResponseEntity<contas> destroy(@PathVariable Long id){
     log.info("Apagar conta com id" + id);
-    var contaEncontrada = repository.findById(id);
+    var contaEncontrada = repository.findById(id)
+    .orElseThrow(() -> new RestNotFoundException("Erro ao deletar, conta não encontrada"));
 
-        if (contaEncontrada.isEmpty()) 
-            return ResponseEntity.notFound().build();
-
-        repository.delete(contaEncontrada.get());
-
+        repository.delete(contaEncontrada);
         return ResponseEntity.noContent().build();
 
     }
 
      @PutMapping("{id}")
-    public ResponseEntity<contas> update(@PathVariable Long id, @RequestBody contas Conta){
+        public ResponseEntity<contas> update(@PathVariable Long id, @RequestBody contas Conta){
         log.info("atualizando conta " + id);
-        var contaEncontrada = repository.findById(id);
-
-        if (contaEncontrada.isEmpty()) 
-            return ResponseEntity.notFound().build();
+        repository.findById(id)
+        .orElseThrow(() -> new RestNotFoundException("Erro ao deletar, conta não encontrada"));
 
         Conta.setId(id);
         repository.save(Conta);
