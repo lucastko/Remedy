@@ -5,9 +5,11 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,69 +18,78 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import br.com.fiap.remedy.exceptions.RestNotFoundException;
-import br.com.fiap.remedy.models.categoria;
+import br.com.fiap.remedy.models.Categoria;
 import br.com.fiap.remedy.repository.categoriaRepository;
+import br.com.fiap.remedy.repository.contaRepository;
+import jakarta.validation.Valid;
 
 
 @RestController
 @RequestMapping("/api/categoria")
 public class categoriaController {
     
-    Logger log = LoggerFactory.getLogger(categoriaController.class);
+    Logger log = LoggerFactory.getLogger(getClass());
 
 
     @Autowired
-    categoriaRepository repository;
+    categoriaRepository categoriaRepository;
 
+    @Autowired
+    contaRepository ContaRepository;
 
+    
     @GetMapping
-    public List<categoria> index(){
-        return repository.findAll();
+    public List<Categoria> index(){
+        return categoriaRepository.findAll();
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<categoria> show(@PathVariable Long id){
+    public ResponseEntity<Categoria> show(@PathVariable Long id){
         log.info("buscar id da categoria " + id);
-        var categoriaEncontrada = repository.findById(id)
-            .orElseThrow(() -> new RestNotFoundException("Categoria não encontrada")); 
-            
-        return ResponseEntity.ok(categoriaEncontrada);
+        var categoria = categoriaRepository.findById(id).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "categoria não encontrada")
+        );
+        return ResponseEntity.ok(categoria);
     }
 
+
     @PostMapping
-    public ResponseEntity<categoria> create(@RequestBody categoria Categoria){
+    public ResponseEntity<Categoria> create(@RequestBody Categoria Categoria){
         log.info("Cadastrar categoria " + Categoria);
-        repository.save(Categoria);
+        categoriaRepository.save(Categoria);
         return ResponseEntity.status(HttpStatus.CREATED).body(Categoria);
 
     }
 
-
     @DeleteMapping("{id}")
-    public ResponseEntity<categoria> destroy(@PathVariable Long id){
+    public ResponseEntity<Categoria> destroy(@PathVariable Long id){
     log.info("Apagar categoria com id" + id);
-    var categoriaEncontrada = repository.findById(id)
+    var categoriaEncontrada = categoriaRepository.findById(id)
     .orElseThrow(() -> new RestNotFoundException("Erro ao deletar, categoria não encontrada"));                           
-        repository.delete(categoriaEncontrada);
+    categoriaRepository.delete(categoriaEncontrada);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 
     }
 
-     @PutMapping("{id}")
-    public ResponseEntity<categoria> update(@PathVariable Long id, @RequestBody categoria Categorias){
-        log.info("atualizando categoria " + id);
-        repository.findById(id)                            
-            .orElseThrow(() -> new RestNotFoundException("Erro ao deletar, categoria não encontrada"));
+    @PutMapping("{id}")
+    public ResponseEntity<Categoria> update(@PathVariable Long id, @RequestBody @Valid Categoria categoria, BindingResult result){
+        log.info("atualizar farmácia " + id);
+        var categoriaEncontrada = categoriaRepository.findById(id);
+        
+        if (categoriaEncontrada.isEmpty()) return ResponseEntity.notFound().build();
 
-        Categorias.setId(id);
-        repository.save(Categorias);
-            
-        return ResponseEntity.ok(Categorias);
+        var novaCategoria = categoriaEncontrada.get();
+        BeanUtils.copyProperties(categoriaRepository, novaCategoria, "id");
+      
+        categoriaRepository.save(novaCategoria);
+
+        return ResponseEntity.ok(novaCategoria);
     }
 
-
-
 }
+
+

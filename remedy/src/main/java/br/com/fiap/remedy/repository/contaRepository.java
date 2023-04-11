@@ -2,8 +2,8 @@ package br.com.fiap.remedy.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import br.com.fiap.remedy.models.contas;
+import br.com.fiap.remedy.models.Conta;
 
-public interface contaRepository  extends JpaRepository<contas, Long>{
+public interface contaRepository  extends JpaRepository<Conta, Long>{
     
 }

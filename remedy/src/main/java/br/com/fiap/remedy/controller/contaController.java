@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
-import br.com.fiap.remedy.exceptions.RestNotFoundException;
-import br.com.fiap.remedy.models.contas;
+import br.com.fiap.remedy.models.Conta;
 import br.com.fiap.remedy.repository.contaRepository;
 
 
@@ -26,58 +26,53 @@ import br.com.fiap.remedy.repository.contaRepository;
 @RequestMapping("/api/contas")
 public class contaController {
     
-    Logger log = LoggerFactory.getLogger(contaController.class);
+    Logger log = LoggerFactory.getLogger(getClass());
 
     @Autowired
     contaRepository repository;
 
     @GetMapping
-    public List<contas> index(){
+    public List<Conta> index(){
         return repository.findAll();
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<contas> show(@PathVariable Long id){
+    public ResponseEntity<Conta> show(@PathVariable Long id){
         log.info("buscar id da conta " + id);
-        var contaEncontrada = repository.findById(id)
-        .orElseThrow(() -> new RestNotFoundException("conta não encontrada"));
-
-        return ResponseEntity.ok(contaEncontrada);
+        return ResponseEntity.ok(getConta(id));
     }
 
     @PostMapping
-    public ResponseEntity<contas> create(@RequestBody contas Contas){
-        log.info("Cadastrar conta " + Contas);
-        repository.save(Contas);
-        return ResponseEntity.status(HttpStatus.CREATED).body(Contas);
+    public ResponseEntity<Conta> create(@RequestBody Conta conta){
+        log.info("Cadastrar conta " + conta);
+        repository.save(conta);
+        return ResponseEntity.status(HttpStatus.CREATED).body(conta);
 
     }
 
 
     @DeleteMapping("{id}")
-    public ResponseEntity<contas> destroy(@PathVariable Long id){
-    log.info("Apagar conta com id" + id);
-    var contaEncontrada = repository.findById(id)
-    .orElseThrow(() -> new RestNotFoundException("Erro ao deletar, conta não encontrada"));
-
-        repository.delete(contaEncontrada);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Conta> destroy(@PathVariable Long id){
+    log.info("apagar conta com id " + id);
+    repository.delete(getConta(id));
+    return ResponseEntity.noContent().build();
 
     }
 
      @PutMapping("{id}")
-        public ResponseEntity<contas> update(@PathVariable Long id, @RequestBody contas Conta){
+        public ResponseEntity<Conta> update(@PathVariable Long id, @RequestBody Conta conta){
         log.info("atualizando conta " + id);
-        repository.findById(id)
-        .orElseThrow(() -> new RestNotFoundException("Erro ao deletar, conta não encontrada"));
-
-        Conta.setId(id);
-        repository.save(Conta);
-            
-        return ResponseEntity.ok(Conta);
+        getConta(id);
+        conta.setId(id);
+        repository.save(conta);
+        return ResponseEntity.ok(conta);
     }
 
-
+    private Conta getConta(Long id) {
+        return repository.findById(id).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "conta não encontrada")
+        );
+    }
 
 }
 
