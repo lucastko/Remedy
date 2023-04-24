@@ -1,12 +1,17 @@
 package br.com.fiap.remedy.controller;
 
 
-import java.util.List;
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -17,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -40,28 +46,37 @@ public class categoriaController {
     @Autowired
     contaRepository ContaRepository;
 
+    @Autowired
+    PagedResourcesAssembler<Object> assembler;
+
     
     @GetMapping
-    public List<Categoria> index(){
-        return categoriaRepository.findAll();
+    public PagedModel<EntityModel<Object>> index(@PageableDefault(size = 5) org.springframework.data.domain.Pageable pageable, @RequestParam(required = false) String busca){
+        Page<Categoria> page = (busca == null) ?
+            categoriaRepository.findAll(pageable) :
+            categoriaRepository.findByDescricaoContaining(busca, pageable);
+        
+        return assembler.toModel(page.map(Categoria::toModel));
     }
 
+
     @GetMapping("{id}")
-    public ResponseEntity<Categoria> show(@PathVariable Long id){
+    public EntityModel<Categoria> show(@PathVariable Long id){
         log.info("buscar id da categoria " + id);
         var categoria = categoriaRepository.findById(id).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "categoria não encontrada")
         );
-        return ResponseEntity.ok(categoria);
+        return categoria.toModel();
     }
 
 
     @PostMapping
-    public ResponseEntity<Categoria> create(@RequestBody Categoria Categoria){
+    public ResponseEntity<EntityModel<Categoria>> create(@RequestBody Categoria Categoria){
         log.info("Cadastrar categoria " + Categoria);
         categoriaRepository.save(Categoria);
-        return ResponseEntity.status(HttpStatus.CREATED).body(Categoria);
-
+        return ResponseEntity
+                            .created(Categoria.toModel().getRequiredLink("self").toUri())
+                            .body(Categoria.toModel());
     }
 
     @DeleteMapping("{id}")
